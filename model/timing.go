@@ -1,7 +1,7 @@
 package model
 
 import (
-	"database/sql"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -11,10 +11,10 @@ type Timing struct {
 	ID         uint `json:"id" sql:"AUTO_INCREMENT" gorm:"primary_key"`
 	ParokiaID  uint
 	Parokia    Parokia
-	StartTime  sql.NullTime
-	EndTime    sql.NullTime
-	Details    string `gorm:"type:text"`
+	StartTime  *time.Time `gorm:"type:TIME;null;default:null"`
+	EndTime    *time.Time `gorm:"type:TIME;null;default:null"`
+	Details    string     `gorm:"type:text"`
 	LanguageID uint
 	Language   Language
-	WeekDay    uint
+	WeekDayID  uint
 }

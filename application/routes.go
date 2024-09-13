@@ -26,6 +26,7 @@ func (a *App) loadRoutes() {
 	router.Route("/churches", a.loadChurchRoutes)
 	router.Route("/parokia", a.loadParokiaRoutes)
 	router.Route("/languages", a.loadLanguagesRoutes)
+	router.Route("/timings", a.loadTimingRoutes)
 
 	a.router = router
 }
@@ -123,5 +124,18 @@ func (a *App) loadLanguagesRoutes(router chi.Router) {
 	router.Get("/{id}", languageHandler.GetByID)
 	router.Put("/{id}", languageHandler.UpdateByID)
 	router.Delete("/{id}", languageHandler.DeleteByID)
+
+}
+
+func (a *App) loadTimingRoutes(router chi.Router) {
+	timingHandler := &handler.Timing{Repo: &repository.TimingRepo{
+		Client: a.gorm,
+	}}
+
+	router.Post("/", timingHandler.Create)
+	router.Get("/", timingHandler.List)
+	router.Get("/{id}", timingHandler.GetByID)
+	router.Put("/{id}", timingHandler.UpdateByID)
+	router.Delete("/{id}", timingHandler.DeleteByID)
 
 }

@@ -13,9 +13,12 @@ func migrate(app *App) {
 	fmt.Println("Running migrations")
 	app.gorm.AutoMigrate(&model.Huduma{})
 	app.gorm.AutoMigrate(&model.User{})
+	app.gorm.AutoMigrate(&model.Church{})
 	app.gorm.AutoMigrate(&model.Jimbo{})
 	app.gorm.AutoMigrate(&model.Parokia{})
 	app.gorm.AutoMigrate(&model.History{})
+	app.gorm.AutoMigrate(&model.Language{})
+	app.gorm.AutoMigrate(&model.Timing{})
 	app.gorm.AutoMigrate(&model.ModelType{})
 
 	var modelTypes = []*model.ModelType{
