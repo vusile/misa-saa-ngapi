@@ -5,23 +5,38 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/gorilla/csrf"
 	"github.com/vusile/misa-saa-ngapi/handler"
+	"github.com/vusile/misa-saa-ngapi/model"
 	"github.com/vusile/misa-saa-ngapi/repository"
 )
 
 func (a *App) loadRoutes() {
 	router := chi.NewRouter()
 
-	router.Use(middleware.Logger)
+	//todo remove on prod
+	router.Use(middleware.Logger,
+		csrf.Protect([]byte("32-byte-long-auth-key"),
+			csrf.Path("/"),
+			csrf.Secure(false)))
 
-	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-	})
+	homeHandler := &handler.HomeHandler{
+		Client:   a.gorm,
+		ESClient: a.esClient,
+	}
 
+	adminHandler := &handler.AdminHandler{
+		Client:   a.gorm,
+		ESClient: a.esClient,
+	}
+
+	router.Handle("/assets/*", http.StripPrefix("/assets/", http.FileServer(http.Dir("/go/src/app/assets"))))
+	router.Get("/", homeHandler.Home)
+	router.Get("/admin", adminHandler.Home)
+	router.Post("/search", homeHandler.Search)
 	router.Route("/users", a.loadUserRoutes)
-	router.Route("/invoices", a.loadInvoiceRoutes)
-	router.Route("/promises", a.loadPromisesRoutes)
 	router.Route("/majimbo", a.loadJimboRoutes)
+	router.Route("/admin/majimbo", a.loadAdminJimboRoutes)
 	router.Route("/countries", a.loadCountryRoutes)
 	router.Route("/churches", a.loadChurchRoutes)
 	router.Route("/parokia", a.loadParokiaRoutes)
@@ -31,42 +46,46 @@ func (a *App) loadRoutes() {
 	a.router = router
 }
 
-func (a *App) loadInvoiceRoutes(router chi.Router) {
-	invoiceHandler := &handler.Invoice{}
-
-	router.Post("/", invoiceHandler.Create)
-	router.Get("/", invoiceHandler.List)
-	router.Get("/{id}", invoiceHandler.GetByID)
-	router.Put("/{id}", invoiceHandler.UpdateByID)
-	router.Delete("/{id}", invoiceHandler.DeleteByID)
-}
-
 func (a *App) loadUserRoutes(router chi.Router) {
-	userHandler := &handler.User{}
+	userHandler := &handler.User{Repo: &repository.UserRepo{
+		Client: a.gorm,
+	}}
 
-	router.Post("/", userHandler.Create)
-	router.Get("/", userHandler.List)
-	router.Get("/{id}", userHandler.GetByID)
-	router.Put("/{id}", userHandler.UpdateByID)
-	router.Delete("/{id}", userHandler.DeleteByID)
-}
+	router.Group(func(router chi.Router) {
+		router.Use(a.loggedInMiddleware)
+		router.Get("/login", userHandler.LoginForm)
+		router.Post("/login", userHandler.Login)
+		router.Get("/register", userHandler.RegistrationForm)
+		router.Post("/", userHandler.Create)
+		router.Get("/confirm-account/{id}", userHandler.CodeForm)
+		router.Post("/confirm", userHandler.ConfirmAccount)
+	})
 
-func (a *App) loadPromisesRoutes(router chi.Router) {
-	promiseHandler := &handler.Promise{}
-
-	router.Post("/", promiseHandler.Create)
-	router.Get("/", promiseHandler.List)
-	router.Get("/{id}", promiseHandler.GetByID)
-	router.Put("/{id}", promiseHandler.UpdateByID)
-	router.Delete("/{id}", promiseHandler.DeleteByID)
-
+	router.Group(func(router chi.Router) {
+		router.Use(a.authMiddleware)
+		router.Get("/logout", userHandler.Logout)
+		router.Get("/", userHandler.List)
+		router.Get("/{id}", userHandler.GetByID)
+		router.Put("/{id}", userHandler.UpdateByID)
+		router.Delete("/{id}", userHandler.DeleteByID)
+	})
 }
 
 func (a *App) loadJimboRoutes(router chi.Router) {
 	jimboHandler := &handler.Jimbo{Repo: &repository.JimboRepo{
 		Client: a.gorm,
 	}}
+	router.Get("/", jimboHandler.All)
+	router.Get("/{slug}/{id}", jimboHandler.Detail)
 
+}
+
+func (a *App) loadAdminJimboRoutes(router chi.Router) {
+	jimboHandler := &handler.Jimbo{Repo: &repository.JimboRepo{
+		Client: a.gorm,
+	}}
+
+	router.Use(a.authMiddleware)
 	router.Post("/", jimboHandler.Create)
 	router.Get("/", jimboHandler.List)
 	router.Get("/{id}", jimboHandler.GetByID)
@@ -80,6 +99,7 @@ func (a *App) loadCountryRoutes(router chi.Router) {
 		Client: a.gorm,
 	}}
 
+	router.Use(a.authMiddleware)
 	router.Post("/", countryHandler.Create)
 	router.Get("/", countryHandler.List)
 	router.Get("/{id}", countryHandler.GetByID)
@@ -103,15 +123,20 @@ func (a *App) loadChurchRoutes(router chi.Router) {
 
 func (a *App) loadParokiaRoutes(router chi.Router) {
 	parokiaHandler := &handler.Parokia{Repo: &repository.ParokiaRepo{
-		Client: a.gorm,
+		Client:   a.gorm,
+		ESClient: a.esClient,
 	}}
 
-	router.Post("/", parokiaHandler.Create)
-	router.Get("/", parokiaHandler.List)
-	router.Get("/{id}", parokiaHandler.GetByID)
-	router.Put("/{id}", parokiaHandler.UpdateByID)
-	router.Delete("/{id}", parokiaHandler.DeleteByID)
+	router.Get("/{slug}/{id}", parokiaHandler.Detail)
 
+	router.Group(func(router chi.Router) {
+		router.Use(a.authMiddleware)
+		router.Post("/", parokiaHandler.Create)
+		router.Get("/", parokiaHandler.List)
+		router.Get("/{id}", parokiaHandler.GetByID)
+		router.Put("/{id}", parokiaHandler.UpdateByID)
+		router.Delete("/{id}", parokiaHandler.DeleteByID)
+	})
 }
 
 func (a *App) loadLanguagesRoutes(router chi.Router) {
@@ -132,10 +157,58 @@ func (a *App) loadTimingRoutes(router chi.Router) {
 		Client: a.gorm,
 	}}
 
+	router.Use(a.authMiddleware)
+	router.Get("/timingform/{id}", timingHandler.List)
 	router.Post("/", timingHandler.Create)
 	router.Get("/", timingHandler.List)
 	router.Get("/{id}", timingHandler.GetByID)
 	router.Put("/{id}", timingHandler.UpdateByID)
-	router.Delete("/{id}", timingHandler.DeleteByID)
+	router.Get("/delete/{id}/{parokiaId}", timingHandler.DeleteByID)
 
+}
+
+func (a *App) authMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		st, err := r.Cookie("session_token")
+		user := model.User{}
+
+		if err != nil || st.Value == "" {
+			http.Redirect(w, r, "/users/login", http.StatusTemporaryRedirect)
+		} else {
+			csrf, err := r.Cookie("csrf_token")
+
+			if csrf.Value != "" && err == nil {
+				a.gorm.Where("session_token = ?", st.Value).First(&user)
+
+				if csrf.Value != user.CsrfToken {
+					http.Redirect(w, r, "/users/login", http.StatusTemporaryRedirect)
+				}
+			} else {
+				http.Redirect(w, r, "/users/login", http.StatusTemporaryRedirect)
+			}
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}
+
+func (a *App) loggedInMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		st, err := r.Cookie("session_token")
+		user := model.User{}
+
+		if err == nil && st.Value != "" {
+			csrf, err := r.Cookie("csrf_token")
+
+			if csrf.Value != "" && err == nil {
+				a.gorm.Where("session_token = ?", st.Value).First(&user)
+
+				if csrf.Value == user.CsrfToken {
+					http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+				}
+			}
+		}
+
+		next.ServeHTTP(w, r)
+	})
 }

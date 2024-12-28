@@ -1,0 +1,45 @@
+{{ template "header" }}
+<div class="col-8">
+    <h1 class="mb-4">{{ .Title }}</h1>
+    <ul class="list-group fs-5 me-5" id="majimbo-list">
+        {{ range .Items }}
+            {{ block "jimbo-list-element" .}}
+                <li class="list-group-item bg-primary text-white">
+                    Jimbo
+                    {{ if .IsJimboKuu}}
+                        Kuu 
+                    {{end}}
+                    la 
+                    {{ .Name }}
+                </li>
+            {{ end}}
+        {{ end}}
+    </ul>
+</div>
+<div class="col-4">
+    <h1 class="mb-4">Add Jimbo</h1>
+
+    <form hx-post="/majimbo" hx-target="#majimbo-list" hx-swap="beforeend" hx-indicator="#spinner" >
+        <div class="mb-2">
+            <label for="jimbo-name">Jina la Jimbo</label>
+            <input type="text" name="name" id="jimbo-name" class="form-control" />
+        </div>
+        <div class="mb-3">
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" value="true" id="is-jimbo-kuu" name="is_jimbo_kuu">
+                <label class="form-check-label" for="is-jimbo-kuu">
+                    Ni Jimbo Kuu?
+                </label>
+                </div>
+        </div>
+
+        <input type="hidden" name="country_id" value="1" />
+        <input type="hidden" name="church_id" value="1" />
+
+        <button type="submit" class="btn btn-primary">
+            <span class="spinner-border spinner-border-sm htmx-indicator" id="spinner" role="status" aria-hidden="true"></span>
+            Submit
+        </button>
+    </form>
+</div>
+{{ template "footer" }}

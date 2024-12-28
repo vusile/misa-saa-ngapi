@@ -18,7 +18,8 @@ type Country struct {
 
 func (d *Country) Create(w http.ResponseWriter, r *http.Request) {
 	var body struct {
-		Name string `json:"name"`
+		Name        string `json:"name"`
+		CountryCode string `json:"country_code"`
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
@@ -28,7 +29,8 @@ func (d *Country) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	country := model.Country{
-		Name: body.Name,
+		Name:        body.Name,
+		CountryCode: body.CountryCode,
 	}
 
 	err := d.Repo.Insert(r.Context(), country)
@@ -117,7 +119,8 @@ func (d *Country) GetByID(w http.ResponseWriter, r *http.Request) {
 
 func (d *Country) UpdateByID(w http.ResponseWriter, r *http.Request) {
 	var body struct {
-		Name string `json:"name"`
+		Name        string `json:"name"`
+		CountryCode string `json:"country_code"`
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
@@ -150,6 +153,7 @@ func (d *Country) UpdateByID(w http.ResponseWriter, r *http.Request) {
 	}
 
 	country.Name = body.Name
+	country.CountryCode = body.CountryCode
 
 	err = d.Repo.Update(r.Context(), country)
 

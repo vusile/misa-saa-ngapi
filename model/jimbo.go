@@ -13,4 +13,5 @@ type Jimbo struct {
 	Country    Country
 	ChurchID   uint
 	Church     Church
+	Slug       string
 }

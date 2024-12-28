@@ -7,17 +7,21 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/go-sql-driver/mysql"
 	gormmysql "gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
 
 type App struct {
-	router http.Handler
-	db     *sql.DB
-	gorm   *gorm.DB
-	config Config
+	router   http.Handler
+	db       *sql.DB
+	gorm     *gorm.DB
+	config   Config
+	esClient *elasticsearch.Client
 }
+
+var AppInstance *App
 
 func New(config Config) *App {
 
@@ -41,15 +45,22 @@ func New(config Config) *App {
 		Conn: db,
 	}), &gorm.Config{})
 
-	app := &App{
-		db:     db,
-		gorm:   gormDB,
-		config: config,
+	client, err := ConnectToESClient(config)
+
+	if err != nil {
+		fmt.Println("failed to connect to elastic search: %w", err)
 	}
 
-	app.loadRoutes()
+	AppInstance := &App{
+		db:       db,
+		gorm:     gormDB,
+		config:   config,
+		esClient: client,
+	}
 
-	return app
+	AppInstance.loadRoutes()
+
+	return AppInstance
 }
 
 func (a *App) Start(ctx context.Context) error {
@@ -60,6 +71,9 @@ func (a *App) Start(ctx context.Context) error {
 	}
 
 	migrate(a)
+	CreateESIndex(a.esClient)
+	IndexParokia(a)
+	SearchAsYouType(a.esClient)
 
 	defer func() {
 		if err := a.db.Close(); err != nil {
@@ -92,6 +106,8 @@ func (a *App) Start(ctx context.Context) error {
 		defer cancel()
 		return server.Shutdown(timeout)
 	}
+}
 
-	return nil
+func GetApplicationInstance() *App {
+	return AppInstance
 }

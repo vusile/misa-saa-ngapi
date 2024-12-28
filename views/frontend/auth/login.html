@@ -1,0 +1,28 @@
+{{ template "header" }}
+    <div class="col-12">
+        <h1 class="mb-4">{{.Title}}</h1>
+        {{ template "validation-errors-container" }}
+        <form id="login-form" hx-post="/users/login" 
+        hx-target="#login-form"
+        hx-target-error="#validation-errors" 
+        hx-indicator="#spinner" >
+            <div class="mb-2">
+                <label for="phone">Namba ya Simu</label>
+                <input type="text" name="phone" id="phone" class="form-control" />
+            </div>
+
+            <div class="mb-2">
+                <label for="password">Password (Neno siri)</label>
+                <input type="password" name="password" id="password" class="form-control" />
+            </div>
+
+            <input type="hidden" name="country_id" value="1" />
+            {{ .Token.csrfField }}
+
+            <button type="submit" class="btn btn-primary">
+                <span class="spinner-border spinner-border-sm htmx-indicator" id="spinner" role="status" aria-hidden="true"></span>
+                Submit
+            </button>
+        </form>
+    </div>
+{{ template "footer" }}

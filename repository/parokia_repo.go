@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/vusile/misa-saa-ngapi/model"
 	"gorm.io/gorm"
 )
@@ -13,13 +14,15 @@ import (
 var ErrorParokiaNotExist = errors.New("parokia does not exist")
 
 type ParokiaRepo struct {
-	Client *gorm.DB
-	DB     *sql.DB
+	Client   *gorm.DB
+	DB       *sql.DB
+	ESClient *elasticsearch.Client
 }
 
-func (repo *ParokiaRepo) Insert(ctx context.Context, parokia model.Parokia) error {
+func (repo *ParokiaRepo) Insert(ctx context.Context, parokia *model.Parokia) error {
 
 	tx := repo.Client.Create(&parokia)
+	parokia.AddToIndex(repo.ESClient)
 
 	if tx.Error != nil {
 		return fmt.Errorf("failed to insert parokia %e", tx.Error)
@@ -32,7 +35,7 @@ func (repo *ParokiaRepo) FindByID(ctx context.Context, id uint64) (model.Parokia
 
 	var parokia model.Parokia
 
-	tx := repo.Client.Preload("Jimbo").First(&parokia, "id = ?", id)
+	tx := repo.Client.Preload("Jimbo").Preload("Timings").Preload("Timings.Language").First(&parokia, "id = ?", id)
 
 	if tx.Error != nil || tx.RowsAffected == 0 {
 		return model.Parokia{}, ErrorParokiaNotExist
@@ -73,6 +76,24 @@ func (repo *ParokiaRepo) FindAll(ctx context.Context, page FindAllPage) (FindPar
 	var parokia []model.Parokia
 
 	tx := repo.Client.Scopes(Paginate(page)).Preload("Jimbo").Find(&parokia)
+
+	if tx.Error != nil {
+		fmt.Println("an error occured while querying", tx.Error)
+		return FindParokiaResult{}, ErrorNotExist
+	}
+
+	return FindParokiaResult{
+			Parokia: parokia,
+			Page:    page.PageNum + 1,
+		},
+		nil
+}
+
+func (repo *ParokiaRepo) FindByUser(ctx context.Context, userId uint64, page FindAllPage) (FindParokiaResult, error) {
+
+	var parokia []model.Parokia
+
+	tx := repo.Client.Scopes(Paginate(page)).Preload("Jimbo").Find(&parokia, "user_id = ?", userId)
 
 	if tx.Error != nil {
 		fmt.Println("an error occured while querying", tx.Error)

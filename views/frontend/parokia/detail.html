@@ -1,0 +1,36 @@
+{{ template "header" .Title }}
+{{ template "search-form" .Token}}
+    <div class="container z-2 position-absolute" >
+        <br>
+        <br>
+        <h1>Muda wa Ibada na Huduma Mbalimbali Parokia ya {{ .Parokia.Name }}</h1>
+        <div class="card-deck mb-3 text-center z-1">
+            {{range $_, $huduma := $.Huduma}}
+            <div class="card mb-4 shadow-sm z-1" >
+                <div class="card-header">
+                    <h4 class="my-0 font-weight-bold">{{ .Name }}</h4>
+                </div>
+                <div class="card-body">
+                    <ul id="huduma-{{.ID}}" class="list-group">
+                        {{range $_, $weekday := $.WeekDays}}
+                        <h3 class="card-title pricing-card-title">{{ $weekday.Name }}</h3>
+                            {{range $_, $time := index $.Timings $huduma.ID}}
+                                {{ if eq $weekday.ID $time.WeekDayID}}
+                                    <li class="list-group-item"> 
+                                        {{ if $time.IsPublicHoliday}}
+                                        (Siku ya Mapumziko)
+                                        {{ end }}
+                                        {{ $time.StartTime.Format "15:04" }} - 
+                                        {{ $time.EndTime.Format "15:04" }} - 
+                                        {{ $time.Language.Name }}
+                                    </li>
+                                {{end}}
+                            {{end}}
+                        {{end}}
+                    </ul>
+                </div>
+            </div>
+            {{end}}
+        </div>
+    </div>
+{{ template "footer" }}

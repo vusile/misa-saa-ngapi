@@ -1,0 +1,65 @@
+{{ template "header" }}
+<div class="col-8">
+    <h1 class="mb-4">{{ .Title }}</h1>
+    {{ template "validation-errors-container" }}
+    <ul class="list-group fs-5 me-5" id="parokia-list">
+        {{ range .Items }}
+            {{ block "parokia-list-element" .}}
+                <li class="list-group-item bg-primary text-white">
+                    <a class="text-white" href="/timings/timingform/{{.ID}}"> 
+                        {{ if .IsKigango}}
+                            Kigango cha 
+                        {{ else}}
+                            Parokia ya
+                        {{end}}
+                        {{ .Name }} - Ongeza Muda wa Ibada
+                    </a>
+                </li>
+            {{ end}}
+        {{ end}}
+    </ul>
+</div>
+<div class="col-4">
+    <h1 class="mb-4">Ongeza Parokia</h1>
+
+    <form hx-post="/parokia" hx-target="#parokia-list" hx-swap="beforeend" hx-indicator="#spinner" >
+        <div class="mb-2">
+            <label for="parokia-name">Jina la Parokia</label>
+            <input type="text" name="name" id="parokia-name" class="form-control" />
+        </div>
+        <div class="mb-2">
+            <label for="location">Mahali ilipo Parokia</label>
+            <input type="text" name="location" id="location" class="form-control" />
+        </div>
+        <div class="mb-2">
+            <label for="jimbo">Jimbo</label>
+            <select class="form-select" aria-label="Changua Jimbo" name="jimbo_id">
+                <option selected>Chagua Jimbo</option>
+                {{ range .Majimbo }}
+                    <option value="{{ .ID }}">
+                        Jimbo
+                        {{ if .IsJimboKuu}}
+                            Kuu 
+                        {{end}}
+                        la 
+                        {{ .Name }}
+                    </option>
+                {{end}}
+              </select>
+        </div>
+        <!-- <div class="mb-3">
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" value="true" id="is-kigango" name="is_kigango">
+                <label class="form-check-label" for="is-kigango">
+                    Ni Kigango?
+                </label>
+                </div>
+        </div> -->
+        {{ .Token.csrfField }}
+        <button type="submit" class="btn btn-primary">
+            <span class="spinner-border spinner-border-sm htmx-indicator" id="spinner" role="status" aria-hidden="true"></span>
+            Submit
+        </button>
+    </form>
+</div>
+{{ template "footer" }}

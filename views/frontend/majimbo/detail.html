@@ -1,0 +1,18 @@
+{{ template "header" .Title }}
+{{ template "search-form" .Token}}
+<div class="container z-2 position-absolute" >
+    <br><br><br><h1 class="mb-4">{{ .Title }}</h1>
+    <ul class="list-group" id="majimbo-list">
+        {{ range .Items }}
+            {{ block "parokia-list-element" .}}
+                <li class="list-group-item">
+                    <a href="/parokia/{{ .Slug }}/{{.ID}}">{{ .Name }} - {{ .Location }} - {{ .Jimbo.Name }}</a>
+                </li>
+            {{ end}}
+        {{ end}}
+        <li class="list-group-item bg-primary">
+            <a class="text-white" href="/parokia">Je Parokia yapo Haipo? Ongeza!</a>
+        </li>
+    </ul>
+</div>
+{{ template "footer" }}

@@ -68,11 +68,11 @@ type FindResult struct {
 	Page    int
 }
 
-func (repo *JimboRepo) FindAll(ctx context.Context, page FindAllPage) (FindResult, error) {
+func (repo *JimboRepo) FindAll(ctx context.Context) (FindResult, error) {
 
 	var majimbo []model.Jimbo
 
-	tx := repo.Client.Scopes(Paginate(page)).Find(&majimbo)
+	tx := repo.Client.Order("name").Find(&majimbo)
 
 	if tx.Error != nil {
 		fmt.Println("an error occured while querying", tx.Error)
@@ -81,7 +81,20 @@ func (repo *JimboRepo) FindAll(ctx context.Context, page FindAllPage) (FindResul
 
 	return FindResult{
 			Majimbo: majimbo,
-			Page:    page.PageNum + 1,
 		},
 		nil
+}
+
+func (repo *JimboRepo) FindParokiaByJimbo(ctx context.Context, jimboId uint64) ([]model.Parokia, error) {
+
+	var parokia []model.Parokia
+
+	tx := repo.Client.Order("name").Preload("Jimbo").Find(&parokia, "jimbo_id = ?", jimboId)
+
+	if tx.Error != nil {
+		fmt.Println("an error occured while querying", tx.Error)
+		return parokia, ErrorNotExist
+	}
+
+	return parokia, nil
 }

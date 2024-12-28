@@ -17,7 +17,7 @@ type TimingRepo struct {
 	DB     *sql.DB
 }
 
-func (repo *TimingRepo) Insert(ctx context.Context, timing model.Timing) error {
+func (repo *TimingRepo) Insert(ctx context.Context, timing []model.Timing) error {
 
 	tx := repo.Client.Create(&timing)
 
@@ -73,6 +73,24 @@ func (repo *TimingRepo) FindAll(ctx context.Context, page FindAllPage) (FindTimi
 	var timings []model.Timing
 
 	tx := repo.Client.Scopes(Paginate(page)).Find(&timings)
+
+	if tx.Error != nil {
+		fmt.Println("an error occured while querying", tx.Error)
+		return FindTimingResult{}, ErrorTimingNotExist
+	}
+
+	return FindTimingResult{
+			Timings: timings,
+			Page:    page.PageNum + 1,
+		},
+		nil
+}
+
+func (repo *TimingRepo) FindByParishId(ctx context.Context, parokiaID uint64, page FindAllPage) (FindTimingResult, error) {
+
+	var timings []model.Timing
+
+	tx := repo.Client.InnerJoins("Huduma").InnerJoins("Language").InnerJoins("WeekDay").Find(&timings, "parokia_id = ?", parokiaID)
 
 	if tx.Error != nil {
 		fmt.Println("an error occured while querying", tx.Error)

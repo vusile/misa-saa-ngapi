@@ -1,0 +1,22 @@
+{{ template "header" .Title }}
+{{ template "search-form" .Token}}
+    <div class="container z-2 position-absolute" >
+    <br><br><br><h1 class="mb-4">{{ .Title }}</h1>
+    <ul class="list-group" id="majimbo-list">
+        {{ range .Items }}
+            {{ block "jimbo-list-element" .}}
+                <li class="list-group-item">
+                    <a href="/majimbo/{{ .Slug }}/{{.ID}}">
+                        Jimbo
+                        {{ if .IsJimboKuu}}
+                            Kuu 
+                        {{end}}
+                        la 
+                        {{ .Name }}
+                    </a>
+                </li>
+            {{ end}}
+        {{ end}}
+    </ul>
+</div>
+{{ template "footer" }}

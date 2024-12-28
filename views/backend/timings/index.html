@@ -1,0 +1,102 @@
+{{ template "header" }}
+<div class="col-8">
+    <h1 class="mb-4">{{ .Title }}</h1>
+    
+    <ul class="list-group fs-5 me-5" id="timing-list">
+        
+            {{ block "timings-list-element" .}}
+            {{ range .Items }}
+                <li class="list-group-item bg-primary text-white">
+                    {{ .Huduma.Name }}
+                    {{ .WeekDay.Name }} 
+                    {{ if .IsPublicHoliday}}
+                    (Siku ya Mapumziko)
+                    {{ end }}
+                    {{ .StartTime.Format "15:04" }} - 
+                    {{ .EndTime.Format "15:04" }} - 
+                    {{ .Language.Name }}
+                    <span style="float:right"><a class="btn btn-info" role="button" hx-get="/timings/delete/{{.ID}}/{{.ParokiaID}}">Delete</a></span>
+                </li>
+            {{ end}}
+        {{ end}}
+    </ul>
+</div>
+<div class="col-4">
+    <h1 class="mb-4">Ongeza Muda wa Misa au Ibada</h1>
+    {{ template "validation-errors-container" }}
+    <form hx-post="/timings" 
+    hx-target="#timing-list"
+    hx-target-error="#validation-errors" 
+    hx-indicator="#spinner" >
+        <div class="mb-2">
+            <label for="jimbo">*Huduma</label>
+            <select class="form-select" aria-label="Changua Saa" name="huduma_id">
+                <option selected>Chagua Huduma</option>
+                {{range .Hudumas }}
+                    <option value='{{.ID}}'>{{ .Name}}</option>
+                {{end}}
+              </select>
+        </div>
+        <div class="mb-2">
+            <label for="start_time">*Muda wa Kuanza</label><br />
+            <select class="form-select" aria-label="Changua Saa" name="start_time">
+                <option selected value="">Muda wa Kuanza</option>
+                {{range $x := loop 5 18 }}
+                    {{range $y := loop 0 55 }}
+                        {{ if mod $y 5}}
+                            <option value='{{ printf "%02d" $x}}:{{ printf "%02d" $y}}:00'>{{ printf "%02d" $x}}:{{ printf "%02d" $y}}</option>
+                        {{ end}}
+                    {{end}}
+                {{end}}
+            </select>
+        </div>
+        <div class="mb-2">
+            <label for="end_time">Muda wa Kuisha</label>
+            <select class="form-select" aria-label="Changua Saa" name="end_time">
+                <option selected value="">Muda wa Kuisha</option>
+                {{range $x := loop 5 18 }}
+                    {{range $y := loop 0 55 }}
+                        {{ if mod $y 5}}
+                            <option value='{{ printf "%02d" $x}}:{{ printf "%02d" $y}}:00'>{{ printf "%02d" $x}}:{{ printf "%02d" $y}}</option>
+                        {{ end}}
+                    {{end}}
+                {{end}}
+            </select>
+        </div>
+        <div class="mb-2">
+            <label for="language_id">Lugha</label>
+            <select class="form-select" aria-label="Changua Lugha" name="language_id">
+                <option selected>Chagua Lugha</option>
+                {{range .Languages }}
+                    <option value='{{ .ID }}'>{{ .Name }}</option>
+                {{end}}
+            </select>
+        </div>
+        <div class="mb-3">
+            {{ range $key, $value := .DaysOfTheWeek }}
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="checkbox" value="{{$key}}" id="day-of-the-week{{$key}}" name="days_of_the_week">
+                    <label class="form-check-label" for="day-of-the-week{{$key}}">
+                        {{ $value }}
+                    </label>
+                </div>
+            {{end}}
+        </div>
+
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" value="true" id="public-holiday" name="is_public_holiday">
+            <label class="form-check-label" for="public-holiday">
+                Siku ya Mapumziko ya Kitaifa
+            </label>
+        </div>
+
+        <input type="hidden" name="parokia_id" value="{{ .Parokia.ID }}" />
+        {{ .Token.csrfField }}
+
+        <button type="submit" class="btn btn-primary">
+            <span class="spinner-border spinner-border-sm htmx-indicator" id="spinner" role="status" aria-hidden="true"></span>
+            Submit
+        </button>
+    </form>
+</div>
+{{ template "footer" }}
