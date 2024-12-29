@@ -21,6 +21,11 @@ func migrate(app *App) {
 	app.gorm.AutoMigrate(&model.ModelType{})
 	app.gorm.AutoMigrate(&model.WeekDay{})
 
+	var countries = []*model.Country{
+		{Name: "Tanzania", CountryCode: "+255"},
+		{Name: "Kenya", CountryCode: "+254"},
+	}
+
 	var modelTypes = []*model.ModelType{
 		{Name: "huduma"},
 		{Name: "jimbo"},
@@ -37,6 +42,21 @@ func migrate(app *App) {
 		{Name: "Jumamosi"},
 	}
 
+	var church = []*model.Church{
+		{Name: "Catholic"},
+	}
+
+	var languages = []*model.Language{
+		{Name: "Kiswahili"},
+		{Name: "Kiingereza"},
+		{Name: "Kichaga"},
+		{Name: "Kihaya"},
+		{Name: "Kisukuma"},
+	}
+
 	app.gorm.Create(modelTypes)
 	app.gorm.Create(weekdays)
+	app.gorm.Create(countries)
+	app.gorm.Create(church)
+	app.gorm.Create(languages)
 }
