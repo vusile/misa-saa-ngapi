@@ -14,11 +14,16 @@ import (
 func (a *App) loadRoutes() {
 	router := chi.NewRouter()
 
-	//todo remove on prod
-	router.Use(middleware.Logger,
-		csrf.Protect([]byte("32-byte-long-auth-key"),
-			csrf.Path("/"),
-			csrf.Secure(false)))
+	if getDotEnvValue("IS_PRODUCTION") == "false" {
+		router.Use(middleware.Logger,
+			csrf.Protect([]byte("32-byte-long-auth-key"),
+				csrf.Path("/"),
+				csrf.Secure(false)))
+	} else {
+		router.Use(middleware.Logger,
+			csrf.Protect([]byte("32-byte-long-auth-key"),
+				csrf.Path("/")))
+	}
 
 	homeHandler := &handler.HomeHandler{
 		Client:   a.gorm,

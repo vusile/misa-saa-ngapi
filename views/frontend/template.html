@@ -59,13 +59,15 @@
         </div>
     {{ end }}
 
-    <ul id="other-messages">
-        {{range .OtherMessages}}
-        <li>
-            {{ . }}
-        </li>
-        {{end}}
-    </ul>
+    {{ define "other-messages" }}
+        <ul id="other-messages">
+            {{range .}}
+            <li>
+                {{ . }}
+            </li>
+            {{end}}
+        </ul>
+    {{end}}
     {{ define "validation-errors-container" }}
             <ul id="validation-errors">
                 {{ block "validation-errors" .}}

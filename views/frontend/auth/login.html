@@ -1,6 +1,7 @@
 {{ template "header" }}
     <div class="col-12">
         <h1 class="mb-4">{{.Title}}</h1>
+        {{ template "other-messages" .OtherMessages}}
         {{ template "validation-errors-container" }}
         <form id="login-form" hx-post="/users/login" 
         hx-target="#login-form"

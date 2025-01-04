@@ -98,8 +98,10 @@ func (d *Jimbo) List(w http.ResponseWriter, r *http.Request) {
 		Items []model.Jimbo `json:"items"`
 		Page  int           `json:"page,omitempty"`
 		Title string
+		Token map[string]interface{}
 	}
 
+	response.Token = SetupToken(r)
 	response.Items = res.Majimbo
 	response.Page = res.Page
 	response.Title = "Majimbo"

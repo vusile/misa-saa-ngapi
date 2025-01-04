@@ -39,7 +39,7 @@ func (u *User) LoginForm(w http.ResponseWriter, r *http.Request) {
 	response.Token[csrf.TemplateTag] = csrf.TemplateField(r)
 	response.Title = "Login"
 	if r.URL.Query().Get("fromRegister") == "1" {
-		response.OtherMessages = append(response.OtherMessages, "Tayari kuna akaunti yenye namba yako. Login sasa")
+		response.OtherMessages = append(response.OtherMessages, "Tayari kuna akaunti yenye namba yako. Login sasa hapa chini")
 	}
 
 	// data, err := json.Marshal(response)
@@ -93,7 +93,7 @@ func (u *User) RegistrationForm(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if r.URL.Query().Get("fromLogin") == "1" {
-		response.OtherMessages = append(response.OtherMessages, "Hakuna akaunti yenye namba yako. Jisajili sasa")
+		response.OtherMessages = append(response.OtherMessages, "Hakuna akaunti yenye namba yako. Jisajili sasa kwenye fomu hii")
 	}
 
 	response.Title = "Jisajili"
@@ -305,6 +305,7 @@ func (u *User) Create(w http.ResponseWriter, r *http.Request) {
 				// w.WriteHeader(http.StatusInternalServerError)
 				// return
 			} else {
+				w.Header().Add("Hx-Redirect", "/users/login")
 				if SendConfirmationCode(user.Code) {
 					w.Header().Add("Hx-Redirect", "/users/confirm-account/"+strconv.FormatUint(uint64(userId), 10))
 				} else {
@@ -418,7 +419,7 @@ func GenerateConfirmationCode() int {
 }
 
 func SendConfirmationCode(code int) bool {
-	messageSent := true
+	messageSent := false
 	//Send code for verification
 	//Check if has WhatsApp
 	//set messageSent to true if has whatsapp, false if not

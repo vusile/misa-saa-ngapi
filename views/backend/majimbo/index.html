@@ -33,9 +33,11 @@
                 </div>
         </div>
 
+        
         <input type="hidden" name="country_id" value="1" />
         <input type="hidden" name="church_id" value="1" />
 
+        {{ .Token.csrfField }}
         <button type="submit" class="btn btn-primary">
             <span class="spinner-border spinner-border-sm htmx-indicator" id="spinner" role="status" aria-hidden="true"></span>
             Submit
