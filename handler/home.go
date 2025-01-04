@@ -55,15 +55,6 @@ func (homeHandler *HomeHandler) Search(w http.ResponseWriter, r *http.Request) {
 
 		var buf bytes.Buffer
 
-		// query := map[string]interface{}{
-		// 	"query": map[string]interface{}{
-		// 		"multi_match": map[string]interface{}{
-		// 			"query":  r.PostFormValue("search"),
-		// 			"fields": []string{"name", "jimbo", "location"},
-		// 		},
-		// 	},
-		// }
-
 		query := map[string]interface{}{
 			"query": map[string]interface{}{
 				"multi_match": map[string]interface{}{
@@ -94,41 +85,56 @@ func (homeHandler *HomeHandler) Search(w http.ResponseWriter, r *http.Request) {
 			esClient.Search.WithBody(&buf),
 		)
 
-		defer res.Body.Close()
+		if res != nil {
+			defer res.Body.Close()
 
-		if err != nil || res.IsError() {
-			fmt.Println("searc error", err, res.Body.Close().Error())
-			tmpl.Execute(w, response)
-		} else {
-			var r map[string]interface{}
-			if err := json.NewDecoder(res.Body).Decode(&r); err != nil {
-				tmpl.Execute(w, response)
-			}
+			if err != nil || res.IsError() {
+				if err != nil {
+					fmt.Println("searc error err", err)
+					tmpl.Execute(w, response)
+				}
 
-			var ids []uint
-			if hits, ok := r["hits"].(map[string]interface{}); ok {
-				if hitsHits, ok := hits["hits"].([]interface{}); ok {
-					for _, hit := range hitsHits {
-						if hitMap, ok := hit.(map[string]interface{}); ok {
-							if idStr, ok := hitMap["_id"].(string); ok {
-								id, _ := strconv.Atoi(idStr)
-								ids = append(ids, uint(id))
+				fmt.Println("search error status", res.Status())
+
+				if res.IsError() {
+					fmt.Println("searc error res.IsError", res.StatusCode)
+					if res.Body != nil {
+						fmt.Println("searc error res.IsError", res.Body.Close().Error())
+					}
+					tmpl.Execute(w, response)
+				}
+			} else {
+				var r = make(map[string]interface{})
+
+				if err := json.NewDecoder(res.Body).Decode(&r); err != nil {
+					tmpl.Execute(w, response)
+				}
+
+				var ids []uint
+				if hits, ok := r["hits"].(map[string]interface{}); ok {
+					if hitsHits, ok := hits["hits"].([]interface{}); ok {
+						for _, hit := range hitsHits {
+							if hitMap, ok := hit.(map[string]interface{}); ok {
+								if idStr, ok := hitMap["_id"].(string); ok {
+									id, _ := strconv.Atoi(idStr)
+									ids = append(ids, uint(id))
+								}
 							}
 						}
 					}
 				}
+
+				var parokia []model.Parokia
+				homeHandler.Client.Preload("Jimbo").Find(&parokia, "id in ?", ids)
+				response.SearchResults = parokia
+
+				tmpl := template.Must(template.ParseFiles(
+					"/go/src/app/views/frontend/home/index.html",
+					"/go/src/app/views/frontend/template.html"))
+
+				tmpl.ExecuteTemplate(w, "search-results", response)
+
 			}
-
-			var parokia []model.Parokia
-			homeHandler.Client.Preload("Jimbo").Find(&parokia, "id in ?", ids)
-			response.SearchResults = parokia
-
-			tmpl := template.Must(template.ParseFiles(
-				"/go/src/app/views/frontend/home/index.html",
-				"/go/src/app/views/frontend/template.html"))
-
-			tmpl.ExecuteTemplate(w, "search-results", response)
-
 		}
 	}
 }

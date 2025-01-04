@@ -73,7 +73,7 @@ func (a *App) Start(ctx context.Context) error {
 	migrate(a)
 	CreateESIndex(a.esClient)
 	IndexParokia(a)
-	SearchAsYouType(a.esClient)
+	// SearchAsYouType(a.esClient)
 
 	defer func() {
 		if err := a.db.Close(); err != nil {

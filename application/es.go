@@ -78,6 +78,7 @@ func SearchAsYouType(client *elasticsearch.Client) {
 	resp, err := mappingReq.Do(context.Background(), client)
 
 	if resp != nil {
+		fmt.Println("Response not nil. Should be good")
 		defer resp.Body.Close()
 	}
 

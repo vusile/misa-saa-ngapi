@@ -6,10 +6,13 @@
         {{ range .Items }}
             {{ block "parokia-list-element" .}}
                 <li class="list-group-item">
-                    <a href="/parokia/{{ .Slug }}/{{.ID}}">{{ .Name }} - {{ .Location }} - {{ .Jimbo.Name }}</a>
+                    <a href="/parokia/{{ .Slug }}/{{.ID}}">{{ .Name }} - {{ .Location }}</a>
                 </li>
             {{ end}}
         {{ end}}
+        <li class="list-group-item">
+            &nbsp;
+        </li>
         <li class="list-group-item bg-primary">
             <a class="text-white" href="/parokia">Je Parokia yapo Haipo? Ongeza!</a>
         </li>

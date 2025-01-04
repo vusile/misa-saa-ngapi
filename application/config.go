@@ -33,6 +33,7 @@ func LoadConfig() Config {
 	cfg.DBPassword = getDotEnvValue("DB_PASSWORD")
 	cfg.DBPort = getDotEnvValue("DB_PORT")
 	cfg.ESPassword = getDotEnvValue("ELASTIC_PASSWORD")
+	cfg.ESUserName = getDotEnvValue("ELASTIC_USERNAME")
 
 	return cfg
 }

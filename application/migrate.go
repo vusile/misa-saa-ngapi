@@ -54,9 +54,18 @@ func migrate(app *App) {
 		{Name: "Kisukuma"},
 	}
 
+	var huduma = []*model.Huduma{
+		{Name: "Misa", Priority: 1},
+		{Name: "Maungamo", Priority: 2},
+		{Name: "Ofisi", Priority: 3},
+		{Name: "Kuabudu Ekaristi", Priority: 4},
+		{Name: "Masifu", Priority: 5},
+	}
+
 	app.gorm.Create(modelTypes)
 	app.gorm.Create(weekdays)
 	app.gorm.Create(countries)
 	app.gorm.Create(church)
 	app.gorm.Create(languages)
+	app.gorm.Create(huduma)
 }
