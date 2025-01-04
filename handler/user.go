@@ -211,7 +211,7 @@ func (u *User) Login(w http.ResponseWriter, r *http.Request) {
 
 				u.Repo.Update(r.Context(), user)
 
-				//Todo: Redirect to admin page
+				w.Header().Add("Hx-Redirect", "/parokia")
 
 			} else {
 				w.WriteHeader(http.StatusBadRequest)
