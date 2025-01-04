@@ -33,3 +33,15 @@ html {
 .z-1 {
     z-index: 1 !important;
 }
+
+ul.error {
+  list-style: none;
+  color: #ff0000;
+  font-weight: bold;
+}
+
+ul.message {
+  list-style: none;
+  color: #ff9500;
+  font-weight: bold;
+}

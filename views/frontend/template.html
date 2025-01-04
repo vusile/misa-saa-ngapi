@@ -60,7 +60,7 @@
     {{ end }}
 
     {{ define "other-messages" }}
-        <ul id="other-messages">
+        <ul id="other-messages" class="message">
             {{range .}}
             <li>
                 {{ . }}
@@ -69,7 +69,7 @@
         </ul>
     {{end}}
     {{ define "validation-errors-container" }}
-            <ul id="validation-errors">
+            <ul id="validation-errors" class="error">
                 {{ block "validation-errors" .}}
                     {{range .ErrorMessages}}
                         <li>
