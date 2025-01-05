@@ -13,7 +13,6 @@
                     (Siku ya Mapumziko)
                     {{ end }}
                     {{ .StartTime.Format "15:04" }} - 
-                    {{ .EndTime.Format "15:04" }} - 
                     {{ .Language.Name }}
                     <span style="float:right"><a class="btn btn-info" role="button" hx-get="/timings/delete/{{.ID}}/{{.ParokiaID}}">Delete</a></span>
                 </li>
@@ -50,7 +49,7 @@
                 {{end}}
             </select>
         </div>
-        <div class="mb-2">
+        <!-- <div class="mb-2">
             <label for="end_time">Muda wa Kuisha</label>
             <select class="form-select" aria-label="Changua Saa" name="end_time">
                 <option selected value="">Muda wa Kuisha</option>
@@ -62,6 +61,10 @@
                     {{end}}
                 {{end}}
             </select>
+        </div> -->
+        <div class="mb-2">
+            <label for="details">Maelezo ya ziada (Mf. Misa ya watoto au maungamo kila baada ya misa)</label>
+            <input type="text" name="details" id="details" class="form-control" />
         </div>
         <div class="mb-2">
             <label for="language_id">Lugha</label>

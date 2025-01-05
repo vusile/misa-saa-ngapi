@@ -21,19 +21,34 @@ type HomeHandler struct {
 
 func (homeHandler *HomeHandler) Home(w http.ResponseWriter, r *http.Request) {
 	var response struct {
-		SearchResults []model.Parokia
-		Token         map[string]interface{}
-		Title         string
+		SearchResults  []model.Parokia
+		Token          map[string]interface{}
+		Title          string
+		RecentParishes []model.Parokia
 	}
+
+	var parokia = []model.Parokia{}
+
+	homeHandler.GetRecentlyAddedParishes(&parokia)
 
 	response.Token = SetupToken(r)
 	response.Title = "Muda wa Ibada na Huduma Tanzania"
+	response.RecentParishes = parokia
 
-	tmpl := template.Must(template.ParseFiles(
+	tmpl := template.Must(template.New("index.html").Funcs(ModulusFuncMap).ParseFiles(
 		"/go/src/app/views/frontend/home/index.html",
 		"/go/src/app/views/frontend/template.html"))
 
 	tmpl.Execute(w, response)
+}
+
+func (homeHandler *HomeHandler) GetRecentlyAddedParishes(parokia *[]model.Parokia) {
+
+	tx := homeHandler.Client.Order("id DESC").Preload("Jimbo").Limit(6).Find(&parokia)
+
+	if tx.Error != nil {
+		fmt.Println("an error occured while querying", tx.Error)
+	}
 }
 
 func (homeHandler *HomeHandler) Search(w http.ResponseWriter, r *http.Request) {

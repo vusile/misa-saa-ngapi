@@ -47,9 +47,8 @@ func IndexParokia(app *App) {
 	}
 }
 
-func SearchAsYouType(client *elasticsearch.Client) {
+func SetupSearchAsYouType(client *elasticsearch.Client) {
 	mappings := map[string]interface{}{
-		// "mappings": map[string]interface{}{
 		"properties": map[string]interface{}{
 			"name": map[string]interface{}{
 				"type": "search_as_you_type",
@@ -61,7 +60,6 @@ func SearchAsYouType(client *elasticsearch.Client) {
 				"type": "search_as_you_type",
 			},
 		},
-		// },
 	}
 
 	mappingJson, err := json.Marshal(mappings)
@@ -78,7 +76,6 @@ func SearchAsYouType(client *elasticsearch.Client) {
 	resp, err := mappingReq.Do(context.Background(), client)
 
 	if resp != nil {
-		fmt.Println("Response not nil. Should be good")
 		defer resp.Body.Close()
 	}
 

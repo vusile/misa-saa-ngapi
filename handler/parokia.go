@@ -224,7 +224,7 @@ func (d *Parokia) Detail(w http.ResponseWriter, r *http.Request) {
 		response.Parokia = parokia
 		response.Timings = parokia.GenerateTimings()
 		response.WeekDays = weekdays
-		response.Huduma = huduma
+		response.Huduma = filterHuduma(huduma, response.Timings)
 		response.Title = "Muda wa Ibada na Huduma Mbalimbali Parokia ya " + parokia.Name
 
 		tmpl := template.Must(template.ParseFiles(
@@ -232,6 +232,22 @@ func (d *Parokia) Detail(w http.ResponseWriter, r *http.Request) {
 			"/go/src/app/views/frontend/template.html"))
 		tmpl.Execute(w, response)
 	}
+}
+
+func filterHuduma(huduma []model.Huduma, timings map[uint][]model.Timing) []model.Huduma {
+	hudumaWithTimes := []model.Huduma{}
+	ids := make(map[uint]uint)
+
+	for _, h := range huduma {
+		if _, ok := timings[h.ID]; ok {
+			if _, okay := ids[h.ID]; !okay {
+				hudumaWithTimes = append(hudumaWithTimes, h)
+				ids[h.ID] = h.ID
+			}
+		}
+	}
+
+	return hudumaWithTimes
 }
 
 func (d *Parokia) UpdateByID(w http.ResponseWriter, r *http.Request) {

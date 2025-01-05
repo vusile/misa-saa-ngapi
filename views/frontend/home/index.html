@@ -1,3 +1,32 @@
 {{ template "header" .Title }}
 {{ template "search-form" .Token}}
+<br><br><h1>Parokia Zilizoongezwa hivi punde...</h1>
+<div class="row">
+    {{ range $i,$p := .RecentParishes }}
+        <div class="col-sm-4">
+            <div class="card">
+                <div class="card-header">
+                    Mpya
+                  </div>
+                <div class="card-body">
+                    <h5 class="card-title">Parokia ya {{ .Name }}</h5>
+                    <h6 class="card-subtitle mb-2 text-muted">
+                        {{ if .Jimbo.IsJimboKuu }}
+                            Jimbo kuu la 
+                        {{ else }}
+                            Jimbo la 
+                        {{ end }}
+                        {{ .Jimbo.Name }}
+                    </h6>
+                    <p class="card-text">Eneo la: {{ .Location }}</p>
+                    <a href="/parokia/{{ .Slug }}/{{.ID}}" class="card-link">Tazama Zaidi</a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- {{ if mod ($i) 3}}
+            </div><div class="row">
+        {{ end }} -->
+    {{ end }}
+</div>
 {{ template "footer" }}

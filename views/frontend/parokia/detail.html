@@ -4,6 +4,15 @@
         <br>
         <br>
         <h1>Muda wa Ibada na Huduma Mbalimbali Parokia ya {{ .Parokia.Name }}</h1>
+        <h4>
+            {{ if .Parokia.Jimbo.IsJimboKuu }}
+                Jimbo kuu la 
+            {{ else }}
+                Jimbo la 
+            {{ end }}
+            {{ .Parokia.Jimbo.Name }}
+        </h4>
+        <h4>Eneo la {{ .Parokia.Location }}</h4>
         <div class="card-deck mb-3 text-center z-1">
             {{range $_, $huduma := $.Huduma}}
             <div class="card mb-4 shadow-sm z-1" >
@@ -21,8 +30,11 @@
                                         (Siku ya Mapumziko)
                                         {{ end }}
                                         {{ $time.StartTime.Format "15:04" }} - 
-                                        {{ $time.EndTime.Format "15:04" }} - 
-                                        {{ $time.Language.Name }}
+                                        <!-- {{ $time.EndTime.Format "15:04" }} -  -->
+                                        {{ $time.Language.Name }} <br>
+                                        {{ if $time.Details }}
+                                        ({{ $time.Details }})
+                                        {{ end }}
                                     </li>
                                 {{end}}
                             {{end}}

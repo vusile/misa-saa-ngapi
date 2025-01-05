@@ -24,10 +24,10 @@ type TimingValidator struct {
 	ParokiaID  uint       `json:"parokia_id" validate:"required"`
 	StartTime  string     `json:"start_time" validate:"required"`
 	TStartTime *time.Time `json:"t_start_time"`
-	TEndTime   *time.Time `json:"t_end_time"`
-	LanguageID uint       `json:"language_id" validate:"required"`
-	WeekDayID  string     `json:"days_of_the_week" validate:"required"`
-	HudumaID   uint       `json:"huduma_id" validate:"required"`
+	// TEndTime   *time.Time `json:"t_end_time"`
+	LanguageID uint   `json:"language_id" validate:"required"`
+	WeekDayID  string `json:"days_of_the_week" validate:"required"`
+	HudumaID   uint   `json:"huduma_id" validate:"required"`
 }
 
 func (d *Timing) Create(w http.ResponseWriter, r *http.Request) {
@@ -49,27 +49,26 @@ func (d *Timing) Create(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("start time:", st)
 	}
 
-	et, error := time.Parse(time.TimeOnly, r.PostFormValue("end_time"))
-	et = et.AddDate(1, 0, 0)
+	// et, error := time.Parse(time.TimeOnly, r.PostFormValue("end_time"))
+	// et = et.AddDate(1, 0, 0)
 
-	if error != nil {
-		fmt.Println("failed to convert time:", error)
-	} else {
-		fmt.Println("end time:", et)
-	}
+	// if error != nil {
+	// 	fmt.Println("failed to convert time:", error)
+	// } else {
+	// 	fmt.Println("end time:", et)
+	// }
 
 	timingValidator := &TimingValidator{}
 
 	timingValidator.ParokiaID = uint(StringToInt(r.PostFormValue("parokia_id")))
 	timingValidator.StartTime = r.PostFormValue("start_time")
 	timingValidator.TStartTime = &st
-	timingValidator.TEndTime = &et
 	timingValidator.LanguageID = uint(StringToInt(r.PostFormValue("language_id")))
 	timingValidator.HudumaID = uint(StringToInt(r.PostFormValue("huduma_id")))
 	timingValidator.WeekDayID = r.PostFormValue("days_of_the_week")
 
 	validate := validator.New(validator.WithRequiredStructEnabled())
-	validate.RegisterStructValidation(TimeValidation, TimingValidator{})
+	// validate.RegisterStructValidation(TimeValidation, TimingValidator{})
 	err := validate.Struct(timingValidator)
 
 	// if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
@@ -106,12 +105,12 @@ func (d *Timing) Create(w http.ResponseWriter, r *http.Request) {
 		timing := model.Timing{
 			ParokiaID:       uint(StringToInt(r.PostFormValue("parokia_id"))),
 			StartTime:       &st,
-			EndTime:         &et,
 			LanguageID:      uint(StringToInt(r.PostFormValue("language_id"))),
 			HudumaID:        uint(StringToInt(r.PostFormValue("huduma_id"))),
 			IsPublicHoliday: isPublicHoliday,
 			UserID:          GetLoggedInUser(r, d.Repo.Client).ID,
 			InsertGroupBy:   time.Now().Unix(),
+			Details:         r.PostFormValue("details"),
 		}
 
 		for _, value := range r.Form["days_of_the_week"] {
@@ -245,9 +244,9 @@ func (d *Timing) GetByID(w http.ResponseWriter, r *http.Request) {
 
 func (d *Timing) UpdateByID(w http.ResponseWriter, r *http.Request) {
 	var body struct {
-		ParokiaID  uint   `json:"parokia_id"`
-		StartTime  string `json:"start_time"`
-		EndTime    string `json:"end_time"`
+		ParokiaID uint   `json:"parokia_id"`
+		StartTime string `json:"start_time"`
+		// EndTime    string `json:"end_time"`
 		Details    string `json:"details"`
 		LanguageID uint   `json:"language_id"`
 		WeekDayID  uint   `json:"week_day_id"`
@@ -289,16 +288,16 @@ func (d *Timing) UpdateByID(w http.ResponseWriter, r *http.Request) {
 		st = st.Add(time.Duration(time.Now().Year()))
 	}
 
-	et, error := time.Parse(time.TimeOnly, body.EndTime)
-	et = et.AddDate(1, 0, 0)
+	// et, error := time.Parse(time.TimeOnly, body.EndTime)
+	// et = et.AddDate(1, 0, 0)
 
-	if error != nil {
-		et = et.Add(time.Duration(time.Now().Year()))
-	}
+	// if error != nil {
+	// 	et = et.Add(time.Duration(time.Now().Year()))
+	// }
 
 	timing.ParokiaID = body.ParokiaID
 	timing.StartTime = &st
-	timing.EndTime = &et
+	// timing.EndTime = &et
 	timing.Details = body.Details
 	timing.LanguageID = body.LanguageID
 	timing.WeekDayID = body.WeekDayID
@@ -345,13 +344,13 @@ func (d *Timing) DeleteByID(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Hx-Redirect", "/timings/timingform/"+parokiaIdParam)
 }
 
-func TimeValidation(sl validator.StructLevel) {
+// func TimeValidation(sl validator.StructLevel) {
 
-	timing := sl.Current().Interface().(TimingValidator)
+// 	timing := sl.Current().Interface().(TimingValidator)
 
-	if timing.TEndTime.Before(*timing.TStartTime) {
-		sl.ReportError(timing.TEndTime, "t_end_time", "EndTime", "et_lt_st", "")
-	}
+// 	if timing.TEndTime.Before(*timing.TStartTime) {
+// 		sl.ReportError(timing.TEndTime, "t_end_time", "EndTime", "et_lt_st", "")
+// 	}
 
-	// plus can do more, even with different tag than "fnameorlname"
-}
+// 	// plus can do more, even with different tag than "fnameorlname"
+// }
